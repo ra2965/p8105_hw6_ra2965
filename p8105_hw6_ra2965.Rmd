@@ -1,0 +1,16 @@
+---
+title: "p8105_hw6_ra2965"
+output: github_document
+---
+
+```{r warning=FALSE, message=FALSE}
+library(modelr)
+library(tidyverse)
+
+btw = read_csv('./data/birthweight.csv')
+
+
+
+
+```
+
