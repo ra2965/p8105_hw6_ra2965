@@ -33,9 +33,10 @@ bwt = bwt %>%
 There is no missing values.
 
 ###Propose a regression model for birthweight
-I hypothesized that the baby birthweight can be associated with momage: mother’s age at delivery (years):
+
+The babies with larger head circumference may have higher birthweight. I hypothesized that the baby birthweight can be associated with bhead: baby’s head circumference at birth (centimeters):
 ```{r}
-fit = lm(bwt ~ momage, data = bwt)
+fit = lm(bwt ~ bhead, data = bwt)
 ```
 
 ```{r warning=FALSE, message=FALSE}
@@ -43,6 +44,9 @@ fit %>%
   broom::tidy() %>% 
   as.tibble()
 ```
+I tried to make a linear regression model with a predictor of momage, which is baby’s head circumference at birth (cm), and a outcome of baby birthweight(gram). The p value of the beta of momage is <0.05, which means that the baby birthweight(gram) is significantly associated with baby’s head circumference at birth (cm) at 5% level of significance.
+
+
 ```{r}
 fit %>% 
   broom::glance() %>% 
