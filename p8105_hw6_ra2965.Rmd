@@ -69,7 +69,16 @@ bwt %>%
   )
 ```
 
+###Compare my model to two others:
 
+One using length at birth and gestational age as predictors (main effects only):
+```{r}
+fit2 = lm(bwt ~ gaweeks + blength, data = bwt)
+```
+
+```{r}
+fit3 = lm(bwt ~ bhead * blength + bhead * babysex + blength * babysex, data = bwt)
+```
 
 
 
