@@ -36,15 +36,20 @@ There is no missing values.
 I hypothesized that the baby birthweight can be associated with momage: mother’s age at delivery (years):
 ```{r}
 fit = lm(bwt ~ momage, data = bwt)
-fit %>% 
-  broom::glance() %>% 
-    knitr::kable(digits = 3)
 ```
 
 ```{r warning=FALSE, message=FALSE}
 fit %>% 
-  broom::tidy() 
+  broom::tidy() %>% 
+  as.tibble()
 ```
+```{r}
+fit %>% 
+  broom::glance() %>% 
+  as.tibble()
+
+```
+
 
 ```{r}
 bwt %>% 
@@ -52,7 +57,12 @@ bwt %>%
   modelr::add_predictions(fit) %>% 
   select(momage, bwt, pred, resid) %>% 
   ggplot(aes(x = pred, y = resid)) + 
-  geom_point()
+  geom_point() +
+  labs(
+    title = 'Model residuals against fitted values',
+    x = 'Fitted values',
+    y = 'Residuals'
+  )
 ```
 
 
