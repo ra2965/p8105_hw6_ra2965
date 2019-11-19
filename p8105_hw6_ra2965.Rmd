@@ -7,10 +7,56 @@ output: github_document
 library(modelr)
 library(tidyverse)
 
-btw = read_csv('./data/birthweight.csv')
+```
 
+#Problem1
 
+###Load the crude data and do data cleaning:
 
+convert some variables to factor vectors:
+```{r warning=FALSE, message=FALSE}
+bwt = read_csv('./data/birthweight.csv')
+
+bwt = bwt %>% 
+  mutate(
+    babysex = fct_infreq(as.factor(babysex)),
+    frace = fct_infreq(as.factor(frace)),
+    malform = fct_infreq(as.factor(malform)),
+    mrace = fct_infreq(as.factor(mrace))
+  )
+
+#checking for missing data?
+#bwt %>% 
+#filter(is.na(wtgain))
 
 ```
+There is no missing values.
+
+###Propose a regression model for birthweight
+I hypothesized that the baby birthweight can be associated with momage: mother’s age at delivery (years):
+```{r}
+fit = lm(bwt ~ momage, data = bwt)
+fit %>% 
+  broom::glance() %>% 
+    knitr::kable(digits = 3)
+```
+
+```{r warning=FALSE, message=FALSE}
+fit %>% 
+  broom::tidy() 
+```
+
+```{r}
+bwt %>% 
+  modelr::add_residuals(fit) %>% 
+  modelr::add_predictions(fit) %>% 
+  select(momage, bwt, pred, resid) %>% 
+  ggplot(aes(x = pred, y = resid)) + 
+  geom_point()
+```
+
+
+
+
+
 
