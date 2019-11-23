@@ -6,7 +6,7 @@ output: github_document
 ```{r warning=FALSE, message=FALSE}
 library(modelr)
 library(tidyverse)
-
+library(mgcv)
 ```
 
 #Problem1
@@ -36,30 +36,40 @@ There is no missing values.
 
 The babies with larger head circumference may have higher birthweight. I hypothesized that the baby birthweight can be associated with bhead: baby’s head circumference at birth (centimeters):
 ```{r}
-fit = lm(bwt ~ bhead, data = bwt)
-```
+bwt %>% 
+  ggplot(aes(x = wtgain, y = bwt)) +
+  geom_point()
 
+```
+It seems there is a positive association between x and y.
+
+Fit a linear regression model:
 ```{r warning=FALSE, message=FALSE}
+
+fit = lm(bwt ~ wtgain, data = bwt)
+
+bwt %>% 
+  add_predictions(fit) %>% 
+  ggplot(aes(x = wtgain, y = bwt)) + 
+  geom_point() +
+  geom_line(aes(y = pred), color = "red")
+
 fit %>% 
   broom::tidy() %>% 
   as.tibble()
-```
-I tried to make a linear regression model with a predictor of momage, which is baby’s head circumference at birth (cm), and a outcome of baby birthweight(gram). The p value of the beta of momage is <0.05, which means that the baby birthweight(gram) is significantly associated with baby’s head circumference at birth (cm) at 5% level of significance.
-
-
-```{r}
 fit %>% 
   broom::glance() %>% 
   as.tibble()
 
 ```
+I tried to make a linear regression model with a predictor of mother’s weight gain during pregnancy (pounds), and a outcome of baby birthweight(gram). The p value of the beta of momage is <0.05, which means that the baby birthweight(gram) is significantly associated with mother’s weight gain during pregnancy at 5% level of significance.
 
-
+###Show a plot of model residuals against fitted values:
 ```{r}
 bwt %>% 
-  modelr::add_residuals(fit) %>% 
-  modelr::add_predictions(fit) %>% 
-  select(momage, bwt, pred, resid) %>% 
+  add_predictions(fit) %>% 
+  add_residuals(fit) %>% 
+  select(wtgain, bwt, pred, resid) %>% 
   ggplot(aes(x = pred, y = resid)) + 
   geom_point() +
   labs(
@@ -73,13 +83,38 @@ bwt %>%
 
 One using length at birth and gestational age as predictors (main effects only):
 ```{r}
-fit2 = lm(bwt ~ gaweeks + blength, data = bwt)
+bwt_df = crossv_mc(bwt, 100) 
+bwt_df =
+  bwt_df %>% 
+  mutate(
+    train = map(train, as_tibble),
+    test = map(test, as_tibble))
+
+bwt_df = 
+  bwt_df %>% 
+  mutate(fit1_mod  = map(train, ~lm(bwt ~ wtgain, data = .x)),
+         fit2_mod  = map(train, ~lm(bwt ~ gaweeks + blength, data = .x)),
+         fit3_mod  = map(train, ~gam(bwt ~ bhead * blength + bhead * babysex + blength * babysex, data = .x))) %>% 
+  mutate(rmse_fit1 = map2_dbl(fit1_mod, test, ~rmse(model = .x, data = .y)),
+         rmse_fit2 = map2_dbl(fit2_mod, test, ~rmse(model = .x, data = .y)),
+         rmse_fit3 = map2_dbl(fit3_mod, test, ~rmse(model = .x, data = .y)))
+
 ```
 
+Make a plot showing the distribution of RMSE values for each candidate model:
 ```{r}
-fit3 = lm(bwt ~ bhead * blength + bhead * babysex + blength * babysex, data = bwt)
+bwt_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") %>% 
+  mutate(model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
 
+According to the violine plot, the model using head circumference, length, sex, and all interactions (including the three-way interaction) between these factors as predictors is the best.
 
 
 
