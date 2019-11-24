@@ -113,7 +113,7 @@ bwt_df %>%
 According to the violine plot, the model using head circumference, length, sex, and all interactions (including the three-way interaction) between these factors as predictors is the best.
 
 #Problem 2
-Load the data:
+###Load the data:
 ```{r warning=FALSE, message=FALSE}
 weather_df = 
   rnoaa::meteo_pull_monitors(
@@ -128,7 +128,7 @@ weather_df =
   select(name, id, everything())
 ```
 
-Calculate the estimates for r_squared and log(beta0*beta1), then tidy data:
+###Calculate the estimates for r_squared and log(beta0*beta1), then tidy data:
 ```{r warning=FALSE, message=FALSE}
 
 weather_estimates = weather_df %>% 
@@ -158,6 +158,9 @@ weather_results = left_join(weather_beta0,weather_beta1, by = "id") %>%
 
 ```
 
+```{r}
+
+```
 
 
 
