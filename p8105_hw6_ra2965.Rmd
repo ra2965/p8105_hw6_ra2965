@@ -25,10 +25,6 @@ bwt = bwt %>%
     mrace = fct_infreq(as.factor(mrace))
   )
 
-#checking for missing data?
-#bwt %>% 
-#filter(is.na(wtgain))
-
 ```
 There is no missing values.
 
@@ -117,7 +113,7 @@ bwt_df %>%
 According to the violine plot, the model using head circumference, length, sex, and all interactions (including the three-way interaction) between these factors as predictors is the best.
 
 #Problem 2
-
+Load the data:
 ```{r warning=FALSE, message=FALSE}
 weather_df = 
   rnoaa::meteo_pull_monitors(
@@ -131,5 +127,37 @@ weather_df =
     tmax = tmax / 10) %>%
   select(name, id, everything())
 ```
+
+Calculate the estimates for r_squared and log(beta0*beta1), then tidy data:
+```{r warning=FALSE, message=FALSE}
+
+weather_estimates = weather_df %>% 
+  modelr::bootstrap(n = 5000) %>% 
+  mutate(
+    models = map(strap, ~lm(tmax ~ tmin, data = .x)),
+    results_beta = map(models, broom::tidy),
+    results_r2 = map(models, broom::glance)
+    ) %>% 
+  select(-models, -strap) %>% 
+  unnest() %>% 
+  janitor::clean_names() %>% 
+  select(id,term, estimate,std_error,statistic,p_value,r_squared)
+
+weather_beta0 = weather_estimates %>% filter(term == "(Intercept)")
+weather_beta1 = weather_estimates %>% 
+  filter(term == "tmin") %>% 
+  select(-r_squared)
+
+weather_results = left_join(weather_beta0,weather_beta1, by = "id") %>% 
+  mutate(log = log(estimate.x*estimate.y)) %>% 
+  rename(beta0 = estimate.x,
+         beta1 = estimate.y,
+         se_beta0 = std_error.x,
+         se_beta1 = std_error.y) %>% 
+  select(beta0,se_beta0, beta1, se_beta1, r_squared, log)
+
+```
+
+
 
 
