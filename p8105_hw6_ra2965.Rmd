@@ -74,6 +74,7 @@ bwt %>%
     y = 'Residuals'
   )
 ```
+It seems like the error is symmetrically distributed around 0, tending to cluster towards the middle of the plot.
 
 ###Compare my model to two others:
 
@@ -90,7 +91,7 @@ bwt_df =
   bwt_df %>% 
   mutate(fit1_mod  = map(train, ~lm(bwt ~ wtgain, data = .x)),
          fit2_mod  = map(train, ~lm(bwt ~ gaweeks + blength, data = .x)),
-         fit3_mod  = map(train, ~gam(bwt ~ bhead * blength + bhead * babysex + blength * babysex, data = .x))) %>% 
+         fit3_mod  = map(train, ~lm(bwt ~ bhead * blength + bhead * babysex + blength * babysex, data = .x))) %>% 
   mutate(rmse_fit1 = map2_dbl(fit1_mod, test, ~rmse(model = .x, data = .y)),
          rmse_fit2 = map2_dbl(fit2_mod, test, ~rmse(model = .x, data = .y)),
          rmse_fit3 = map2_dbl(fit3_mod, test, ~rmse(model = .x, data = .y)))
