@@ -131,7 +131,7 @@ weather_df =
 
 ###Calculate the estimates for r_squared and log(beta0*beta1), then tidy data:
 ```{r warning=FALSE, message=FALSE}
-
+set.seed(1)
 weather_estimates = weather_df %>% 
   modelr::bootstrap(n = 5000) %>% 
   mutate(
@@ -160,7 +160,7 @@ weather_results = left_join(weather_beta0,weather_beta1, by = "id") %>%
 weather_results %>% 
    ggplot(aes(x = r_squared)) + geom_density()
 ```
-This distribution has a heavier tail extending to low values and a bit of a “shoulder”, features that may be related to the frequency with which large outliers are included in the bootstrap sample.
+This distribution has a heavier tail extending to low values, features that may be related to the frequency with which large outliers are included in the bootstrap sample.
 In addition, the mean r square is larger than 0.90, which indicates more than 90% variance of tmax can be explained by tmin.
 
 ```{r}
@@ -180,9 +180,12 @@ quantile(weather_results$r_squared, c(0.025, 0.975)) %>%
   knitr::kable()
 
 ```
+According to the table above, the 95% CI for r square is (0.89, 0.93).
+
 
 ```{r}
 quantile(weather_results$log_betas, c(0.025, 0.975)) %>% 
     knitr::kable()
 ```
+According to the table above, the 95% CI for Log(beta0*beta1) is (1.97, 2.06).
 
